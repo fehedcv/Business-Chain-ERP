@@ -1,0 +1,102 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-12-25 21:07:45.957903",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "core_section",
+  "agent",
+  "business_unit",
+  "lead",
+  "credits",
+  "classification_and_audit_section",
+  "transaction_type",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "core_section",
+   "fieldtype": "Section Break",
+   "label": "Core"
+  },
+  {
+   "fieldname": "agent",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Agent",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "business_unit",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Business Unit",
+   "options": "Business Unit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "label": "Lead",
+   "options": "Lead",
+   "unique": 1
+  },
+  {
+   "fieldname": "credits",
+   "fieldtype": "Int",
+   "label": "Credits"
+  },
+  {
+   "fieldname": "classification_and_audit_section",
+   "fieldtype": "Section Break",
+   "label": "Classification and Audit"
+  },
+  {
+   "fieldname": "transaction_type",
+   "fieldtype": "Select",
+   "label": "Transaction Type",
+   "options": "Lead Reward\nBonus\nPenalty\nManual Adjustment"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-25 21:13:38.188588",
+ "modified_by": "Administrator",
+ "module": "Business Chain",
+ "name": "Agent Credit Ledger",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agent",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

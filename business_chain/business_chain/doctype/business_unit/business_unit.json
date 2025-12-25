@@ -1,0 +1,190 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series",
+ "creation": "2025-12-25 20:36:51.697961",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "basic_unit_section",
+  "naming_series",
+  "business_name",
+  "category",
+  "status",
+  "contact_details_section",
+  "manager_name",
+  "primary_phone",
+  "whatsapp_number",
+  "email",
+  "location_and_description_section",
+  "website",
+  "location",
+  "address",
+  "description",
+  "portfolio_section",
+  "services",
+  "gallery"
+ ],
+ "fields": [
+  {
+   "fieldname": "basic_unit_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Unit"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Naming Series",
+   "options": "BU-.####",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "business_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Business Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "Interior Design\nIT Solutions\nManpower Solutions\nReal Estate\nSecurity Services",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nInactive",
+   "reqd": 1
+  },
+  {
+   "fieldname": "contact_details_section",
+   "fieldtype": "Section Break",
+   "label": "Contact Details"
+  },
+  {
+   "fieldname": "manager_name",
+   "fieldtype": "Data",
+   "label": "Manager Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "primary_phone",
+   "fieldtype": "Phone",
+   "label": "Primary Phone",
+   "reqd": 1
+  },
+  {
+   "fieldname": "whatsapp_number",
+   "fieldtype": "Phone",
+   "label": "Whatsapp Number",
+   "reqd": 1
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email",
+   "reqd": 1
+  },
+  {
+   "fieldname": "location_and_description_section",
+   "fieldtype": "Section Break",
+   "label": "Location and Description"
+  },
+  {
+   "fieldname": "website",
+   "fieldtype": "Data",
+   "label": "Website",
+   "options": "URL"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Geolocation",
+   "label": "City / Area"
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "portfolio_section",
+   "fieldtype": "Section Break",
+   "label": "Portfolio"
+  },
+  {
+   "fieldname": "services",
+   "fieldtype": "Table",
+   "label": "Services",
+   "options": "Business Unit Service"
+  },
+  {
+   "fieldname": "gallery",
+   "fieldtype": "Table",
+   "label": "Gallery",
+   "options": "Business Unit Gallery"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-25 20:49:49.092822",
+ "modified_by": "Administrator",
+ "module": "Business Chain",
+ "name": "Business Unit",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Business_manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agent",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

@@ -1,0 +1,149 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "naming_series",
+ "creation": "2025-12-25 20:54:15.852714",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enquiry_identity_section",
+  "naming_series",
+  "business_unit",
+  "assigned_agent",
+  "customer_name",
+  "phone",
+  "email",
+  "description",
+  "status_and_verification_section",
+  "status",
+  "verified_by_admin",
+  "verification_notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "enquiry_identity_section",
+   "fieldtype": "Section Break",
+   "label": "Enquiry Identity"
+  },
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Naming Series",
+   "options": "LE-.####",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "business_unit",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Business Unit",
+   "options": "Business Unit",
+   "reqd": 1
+  },
+  {
+   "fieldname": "assigned_agent",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Assigned Agent",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "customer_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Customer Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Phone",
+   "label": "Phone"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "status_and_verification_section",
+   "fieldtype": "Section Break",
+   "label": "Status and Verification"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "New\nIn Progress\nSuccessful\nRejected",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "verified_by_admin",
+   "fieldtype": "Check",
+   "label": "Verified By Admin"
+  },
+  {
+   "fieldname": "verification_notes",
+   "fieldtype": "Small Text",
+   "label": "Verification Notes"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-12-25 21:07:06.856617",
+ "modified_by": "Administrator",
+ "module": "Business Chain",
+ "name": "Lead",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Agent",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Business_manager",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
