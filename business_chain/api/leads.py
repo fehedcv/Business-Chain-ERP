@@ -1,0 +1,137 @@
+import frappe
+from frappe import _
+from business_chain.api.utils import get_owned_business_units
+
+ALLOWED_STATUSES = [
+    "Pending",
+    "Verified",
+    "In Progress",
+    "Completed",
+    "Rejected"
+]
+
+@frappe.whitelist()
+def get_business_leads(status="All", search=None):
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+
+    if "Business_manager" not in roles and "System Manager" not in roles:
+        frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+    owned_units = get_owned_business_units(user)
+
+    if not owned_units:
+        frappe.throw(_("No business unit access"))
+
+    filters = {
+        "business_unit": ["in", owned_units]
+    }
+
+    if status != "All":
+        if status not in ALLOWED_STATUSES:
+            frappe.throw(_("Invalid status"))
+        filters["status"] = status
+
+    if search:
+        filters["client_name"] = ["like", f"%{search}%"]
+
+    leads = frappe.get_all(
+        "Lead",
+        filters=filters,
+        fields=[
+            "name as id",
+            "customer_name",
+            "service",
+            "status",
+            "business_unit",
+            "creation as date"
+        ],
+        order_by="creation desc"
+    )
+    
+
+    # ---- SUMMARY COUNTS ----
+    def count(status=None):
+        f = {"business_unit": ["in", owned_units]}
+        if status:
+            f["status"] = status
+        return frappe.db.count("Lead", f)
+
+    summary = {
+        "total": count(),
+        "pending": count("Pending"),
+        "verified": frappe.db.count(
+            "Lead",
+            {
+                "business_unit": ["in", owned_units],
+                "status": ["in", ["Verified", "In Progress", "Completed"]]
+            }
+        ),
+        "in_progress": count("In Progress"),
+        "completed": count("Completed"),
+        "rejected": count("Rejected")
+    }
+
+    return {
+        "summary": summary,
+        "leads": leads
+    }
+
+
+@frappe.whitelist()
+def update_lead_status(lead_id, status):
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+
+    if "Business_manager" not in roles and "System Manager" not in roles:
+        frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+    lead = frappe.get_doc("Lead", lead_id)
+    owned_units = get_owned_business_units(user)
+
+    if lead.business_unit not in owned_units:
+        frappe.throw(_("Unauthorized for this business unit"))
+
+    transitions = {
+        "Pending": ["Verified", "Rejected"],
+        "Verified": ["In Progress"],
+        "In Progress": ["Completed"]
+    }
+
+    if lead.status not in transitions or status not in transitions[lead.status]:
+        frappe.throw(_("Invalid status transition"))
+
+    lead.status = status
+    lead.save(ignore_permissions=True)
+
+    return {"success": True}
+
+
+
+@frappe.whitelist()
+def get_business_lead_detail(lead_id):
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+
+    if "Business_manager" not in roles and "System Manager" not in roles:
+        frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+    lead = frappe.get_doc("Lead", lead_id)
+
+    owned_units = get_owned_business_units(user)
+
+    if lead.business_unit not in owned_units:
+        frappe.throw(_("Unauthorized access to this lead"))
+
+    return {
+        "id": lead.name,
+        "status": lead.status,
+        "service": lead.service,
+        "description": lead.description,
+        "clientName": lead.customer_name,
+        "clientPhone": lead.phone,
+        
+        "businessUnit": lead.business_unit,
+        "agentId": lead.source_agent,
+        "date": lead.creation
+    }

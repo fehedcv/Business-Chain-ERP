@@ -7,7 +7,6 @@
  "field_order": [
   "core_section",
   "agent",
-  "business_unit",
   "lead",
   "credits",
   "classification_and_audit_section",
@@ -26,14 +25,6 @@
    "in_list_view": 1,
    "label": "Agent",
    "options": "User",
-   "reqd": 1
-  },
-  {
-   "fieldname": "business_unit",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Business Unit",
-   "options": "Business Unit",
    "reqd": 1
   },
   {
@@ -68,7 +59,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-25 21:13:38.188588",
+ "modified": "2025-12-27 00:05:23.266484",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Agent Credit Ledger",

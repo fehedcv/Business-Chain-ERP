@@ -106,7 +106,7 @@
   },
   {
    "fieldname": "location",
-   "fieldtype": "Geolocation",
+   "fieldtype": "Data",
    "label": "City / Area"
   },
   {
@@ -117,7 +117,7 @@
   },
   {
    "fieldname": "description",
-   "fieldtype": "Text Editor",
+   "fieldtype": "Small Text",
    "label": "Description",
    "reqd": 1
   },
@@ -142,7 +142,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-25 20:49:49.092822",
+ "modified": "2025-12-26 23:35:07.056210",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Business Unit",

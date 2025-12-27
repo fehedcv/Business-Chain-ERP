@@ -6,7 +6,7 @@
  "engine": "InnoDB",
  "field_order": [
   "assignment_section",
-  "business_unt",
+  "business_unit",
   "user",
   "role_in_unit"
  ],
@@ -15,14 +15,6 @@
    "fieldname": "assignment_section",
    "fieldtype": "Section Break",
    "label": "Assignment"
-  },
-  {
-   "fieldname": "business_unt",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Business Unit",
-   "options": "Business Unit",
-   "reqd": 1
   },
   {
    "fieldname": "user",
@@ -39,12 +31,20 @@
    "label": "Role In Unit",
    "options": "Manager\nAgent",
    "reqd": 1
+  },
+  {
+   "fieldname": "business_unit",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Business Unit",
+   "options": "Business Unit",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-25 20:52:59.726284",
+ "modified": "2025-12-26 17:14:41.049813",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Business Unit Member",

@@ -144,6 +144,12 @@ app_license = "mit"
 # 		"on_trash": "method"
 # 	}
 # }
+doc_events = {
+    "Business Unit Member": {
+        "after_insert": "business_chain.business_chain.doctype.business_unit_member.business_unit_member_hook.after_insert"
+    }
+}
+
 
 # Scheduled Tasks
 # ---------------
