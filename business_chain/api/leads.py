@@ -135,3 +135,86 @@ def get_business_lead_detail(lead_id):
         "agentId": lead.source_agent,
         "date": lead.creation
     }
+
+@frappe.whitelist()
+def submit_lead(
+    business_unit: str,
+    client_name: str,
+    client_phone: str,
+    service: str,
+    notes: str = None
+):
+    """
+    Agent submits a referral lead.
+    """
+
+    # ----------------------------
+    # 1. AUTH & ROLE VALIDATION
+    # ----------------------------
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+
+    if not user or user == "Guest":
+        frappe.throw("Authentication required")
+
+    if "Agent" not in roles:
+        frappe.throw("Only agents can submit referrals")
+
+    # ----------------------------
+    # 2. BUSINESS UNIT VALIDATION
+    # ----------------------------
+    if not business_unit:
+        frappe.throw("Business Unit is required")
+
+    if not frappe.db.exists("Business Unit", business_unit):
+        frappe.throw("Invalid Business Unit")
+
+    # ----------------------------
+    # 3. INPUT VALIDATION
+    # ----------------------------
+    if not client_name:
+        frappe.throw("Client name is required")
+
+    if not client_phone:
+        frappe.throw("Client phone is required")
+
+    if not service:
+        frappe.throw("Service is required")
+
+    # ----------------------------
+    # 4. SERVICE NAME → ID RESOLUTION
+    # ----------------------------
+    service_id = frappe.db.get_value(
+        "Business Unit Service",
+        {"service_name": service},   # OR {"service_name": service} if that's your field
+        "name"
+    )
+
+    if not service_id:
+        frappe.throw(f"Invalid service: {service}")
+
+    # ----------------------------
+    # 5. CREATE LEAD (SERVER AUTHORITY)
+    # ----------------------------
+    lead = frappe.new_doc("Lead")
+    lead.business_unit = business_unit
+    lead.customer_name = client_name
+    lead.client_phone = client_phone
+    lead.service = service_id     # ✅ LINK FIELD GETS ID
+    lead.notes = notes
+
+    # 🔒 HARD RULES (NON-NEGOTIABLE)
+    lead.source_agent = user
+    lead.status = "Pending"
+    lead.verified_by_admin = 0
+
+    lead.insert(ignore_permissions=True)
+
+    # ----------------------------
+    # 6. RESPONSE
+    # ----------------------------
+    return {
+        "lead_id": lead.name,
+        "status": lead.status,
+        "business_unit": business_unit
+    }
