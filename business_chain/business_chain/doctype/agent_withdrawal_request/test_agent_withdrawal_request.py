@@ -1,0 +1,9 @@
+# Copyright (c) 2025, vynx and Contributors
+# See license.txt
+
+# import frappe
+from frappe.tests.utils import FrappeTestCase
+
+
+class TestAgentWithdrawalRequest(FrappeTestCase):
+	pass

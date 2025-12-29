@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils import formatdate
 
 @frappe.whitelist()
 def whoami():
@@ -73,3 +74,58 @@ def get_business_unit(business_unit: str):
         "services": services,
         "gallery": gallery
     }
+
+
+
+@frappe.whitelist()
+def get_my_lead_history():
+    """
+    Returns all leads submitted by the logged-in agent
+    """
+
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+
+    if not user or user == "Guest":
+        frappe.throw("Authentication required")
+
+    if "Agent" not in roles:
+        frappe.throw("Only agents can view this")
+
+    leads = frappe.get_all(
+        "Lead",
+        filters={
+            "source_agent": user
+        },
+        fields=[
+            "name",
+            "customer_name",
+            "business_unit",
+            "status",
+            "creation"
+        ],
+        order_by="creation desc"
+    )
+
+    result = []
+    for l in leads:
+        result.append({
+            "id": l.name,
+            "clientName": l.customer_name,
+            "businessUnit": l.business_unit,
+            "status": normalize_status(l.status),
+            "date": formatdate(l.creation)
+        })
+
+    return result
+
+
+def normalize_status(status):
+    """
+    UI-level normalization
+    """
+    if status in ("Verified", "Completed"):
+        return "Successful"
+    if status == "Rejected":
+        return "Rejected"
+    return "Pending"
