@@ -4,22 +4,22 @@
 import frappe
 from frappe.model.document import Document
 
-
 class AgentCreditLedger(Document):
 
     def validate(self):
-        # Allow system actions
+        # ✅ Allow system-generated entries
+        if getattr(self.flags, "ignore_validate", False):
+            return
+        
         if self.transaction_type in ("Lead Reward", "Withdrawal"):
             return
 
-        # Block manual creation
-        if frappe.session.user != "Administrator":
-            frappe.throw("Only admin can create credit ledger entries")
+        # ✅ Allow Administrator explicitly
+        if frappe.session.user == "Administrator":
+            return
 
-    #def validate(self):
-       # ✅ Allow system-created ledger entries
-        '''if self.flags.get("from_lead"):
-            return'''
+        # ❌ Block everything else
+        frappe.throw("Only admin or system actions can create credit ledger entries")
 
 
 

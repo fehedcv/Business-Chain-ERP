@@ -70,7 +70,7 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-29 11:24:43.367023",
+ "modified": "2025-12-30 08:44:12.065983",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Agent Credit Ledger",
@@ -78,6 +78,7 @@
  "permissions": [
   {
    "create": 1,
+   "delete": 1,
    "email": 1,
    "export": 1,
    "print": 1,

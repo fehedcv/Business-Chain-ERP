@@ -72,12 +72,23 @@ def get_agent_available_credits(agent: str) -> int:
         SELECT COALESCE(SUM(credits), 0)
         FROM `tabAgent Credit Ledger`
         WHERE agent = %s
+          AND status = 'Approved'
+        """,
+        (agent,) 
+    )
+    result2 = frappe.db.sql(
+        """
+        SELECT COALESCE(SUM(credits), 0)
+        FROM `tabAgent Credit Ledger`
+        WHERE agent = %s
           AND status = 'Credited'
         """,
-        (agent,),
+        (agent,) 
     )
 
-    return int(result[0][0] or 0)
+    return int(result[0][0] or 0) - int(result2[0][0] or 0)
+
+
 
 
 @frappe.whitelist()
@@ -97,7 +108,7 @@ def request_withdrawal(requested_credits: int, remarks=None):
     # --- CHECK BALANCE ---
     available = get_agent_available_credits(user)
     if requested_credits > available:
-        frappe.throw("Insufficient available credits")
+        frappe.throw("Insufficient available credits {}(Available: {})".format(requested_credits, available)    )
 
     # --- CREATE WITHDRAWAL REQUEST ---
     req = frappe.new_doc("Agent Withdrawal Request")
