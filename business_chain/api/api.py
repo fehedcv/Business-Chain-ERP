@@ -98,7 +98,6 @@ def get_my_lead_history():
             "source_agent": user
         },
         fields=[
-            "name",
             "customer_name",
             "business_unit",
             "status",
@@ -108,14 +107,16 @@ def get_my_lead_history():
     )
 
     result = []
+    i=1
     for l in leads:
         result.append({
-            "id": l.name,
+            "id": i,
             "clientName": l.customer_name,
-            "businessUnit": l.business_unit,
+            "businessUnit": frappe.get_value("Business Unit", l.business_unit, "business_name"),
             "status": normalize_status(l.status),
             "date": formatdate(l.creation)
         })
+        i+=1
 
     return result
 

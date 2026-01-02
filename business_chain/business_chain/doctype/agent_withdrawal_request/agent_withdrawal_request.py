@@ -30,7 +30,7 @@ class AgentWithdrawalRequest(Document):
         ledger.credits = -abs(self.requested_credits)
         ledger.status = "Credited"
         ledger.transaction_type = "Withdrawal"
-        ledger.remarks = f"Withdrawal credited via request {self.name}"
+        ledger.remarks = f"Withdrawal credited via request at {self.creation}"
         # Mark as system-generated (IMPORTANT)
         ledger.flags.ignore_validate = True
         ledger.insert(ignore_permissions=True)

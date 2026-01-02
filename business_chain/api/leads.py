@@ -48,7 +48,12 @@ def get_business_leads(status="All", search=None):
         ],
         order_by="creation desc"
     )
-    
+    for lead in leads:
+        service_name = frappe.get_value("Business Unit Service", lead.service, "service_name")
+        lead["service"] = service_name if service_name else lead.service
+        business_name = frappe.get_value("Business Unit", lead.business_unit, "business_name")
+        lead["business_unit"] = business_name if business_name else lead.business_unit
+
 
     # ---- SUMMARY COUNTS ----
     def count(status=None):
@@ -122,16 +127,15 @@ def get_business_lead_detail(lead_id):
 
     if lead.business_unit not in owned_units:
         frappe.throw(_("Unauthorized access to this lead"))
-
+    i=0
     return {
         "id": lead.name,
         "status": lead.status,
-        "service": lead.service,
+        "service": frappe.get_value("Business Unit Service", lead.service, "service_name"),
         "description": lead.description,
         "clientName": lead.customer_name,
         "clientPhone": lead.phone,
-        
-        "businessUnit": lead.business_unit,
+        "businessUnit": frappe.get_value("Business Unit", lead.business_unit, "business_name"),
         "agentId": lead.source_agent,
         "date": lead.creation
     }
@@ -199,9 +203,10 @@ def submit_lead(
     lead = frappe.new_doc("Lead")
     lead.business_unit = business_unit
     lead.customer_name = client_name
-    lead.client_phone = client_phone
+    #lead.phone should be converted to indian number format
+    lead.phone = f"+91-{client_phone}"  # Ensure phone is a string
     lead.service = service_id     # ✅ LINK FIELD GETS ID
-    lead.notes = notes
+    lead.description = notes
 
     # 🔒 HARD RULES (NON-NEGOTIABLE)
     lead.source_agent = user

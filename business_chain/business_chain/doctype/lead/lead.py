@@ -44,7 +44,7 @@ class Lead(Document):
         ledger = frappe.new_doc("Agent Credit Ledger")
         ledger.agent = self.source_agent
         ledger.lead = self.name
-        ledger.remarks = f"Provisional credit for lead {self.name}"
+        ledger.remarks = f"Provisional credit for lead of customer '{self.customer_name}'"
 
         # 🔑 SYSTEM FLAG (NOT A FIELD)
         ledger.flags.from_lead = True
