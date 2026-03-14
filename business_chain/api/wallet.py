@@ -46,10 +46,20 @@ def get_agent_wallet():
             "remarks": r.remarks,
             "date": r.creation.strftime("%d %b %Y")
         })
-
+    
+    #subtract withdrawal requests with status pending from available credits
+    pending_withdrawals = frappe.db.sql(
+        """
+        SELECT COALESCE(SUM(requested_credits), 0)
+        FROM `tabAgent Withdrawal Request`
+        WHERE agent = %s
+          AND status = 'Pending'
+        """,
+        (user,) 
+    )
     return {
         "summary": {
-            "available_cash": available - cleared ,   # ₹10 per credit
+            "available_cash": available - cleared - pending_withdrawals[0][0],  
             "cleared_cash": cleared ,
             "credits_available": available 
         },
@@ -85,8 +95,19 @@ def get_agent_available_credits(agent: str) -> int:
         """,
         (agent,) 
     )
+    
+    #add a variable called result3 to get the sum of requested credits with status pending in the Agent Withdrawal Request doctype for the same agent and subtract it from the available credits
+    result3 = frappe.db.sql(
+        """
+        SELECT COALESCE(SUM(requested_credits), 0)
+        FROM `tabAgent Withdrawal Request`
+        WHERE agent = %s
+          AND status = 'Pending'
+        """,
+        (agent,) 
+    )
 
-    return int(result[0][0] or 0) - int(result2[0][0] or 0)
+    return int(result[0][0] or 0) - int(result2[0][0] or 0) - int(result3[0][0] or 0)
 
 
 
@@ -122,3 +143,36 @@ def request_withdrawal(requested_credits: int, remarks=None):
         "request_id": req.name,
         "status": req.status
     }
+
+#api to get withdrawal requests of the logged in agent
+@frappe.whitelist()
+def get_withdrawal_requests():
+    user = frappe.session.user
+
+    # --- AUTH ---
+    if not user or user == "Guest":
+        frappe.throw("Login required")
+
+    if "Agent" not in frappe.get_roles(user):
+        frappe.throw("Only agents can view withdrawal requests")
+
+    # --- FETCH WITHDRAWAL REQUESTS ---
+    requests = frappe.get_all(
+        "Agent Withdrawal Request",
+        filters={"agent": user},
+        fields=["name", "requested_credits", "status", "remarks", "creation"],
+        order_by="creation desc"
+    )
+
+    # Format the response
+    formatted_requests = []
+    for r in requests:
+        formatted_requests.append({
+            "id": r.name,
+            "requested_credits": r.requested_credits,
+            "status": r.status,
+            "remarks": r.remarks,
+            "date": r.creation.strftime("%d %b %Y")
+        })
+
+    return formatted_requests
