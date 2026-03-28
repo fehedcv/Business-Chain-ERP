@@ -106,6 +106,17 @@ def update_lead_status(lead_id, status):
     if lead.status not in transitions or status not in transitions[lead.status]:
         frappe.throw(_("Invalid status transition"))
 
+    #if lead is being marked as Verified, make a record in the Agent Credit Ledger with status Pending and credits 0, and reference to the lead
+    if status == "Verified":
+        ledger_entry = frappe.new_doc("Agent Credit Ledger")
+        ledger_entry.agent = lead.source_agent
+        ledger_entry.lead = lead.name
+        ledger_entry.credits = 0
+        ledger_entry.status = "Pending"
+        ledger_entry.transaction_type = "Lead Reward"
+        ledger_entry.remarks = f"Lead {lead.customer_name} marked as Verified - pending admin approval for credits"  
+        ledger_entry.insert(ignore_permissions=True)
+
     lead.status = status
     lead.save(ignore_permissions=True)
 
@@ -127,7 +138,8 @@ def get_business_lead_detail(lead_id):
 
     if lead.business_unit not in owned_units:
         frappe.throw(_("Unauthorized access to this lead"))
-    i=0
+    agent_name = frappe.get_value("User", lead.source_agent, "full_name")
+    
     return {
         "id": lead.name,
         "status": lead.status,
@@ -136,7 +148,7 @@ def get_business_lead_detail(lead_id):
         "clientName": lead.customer_name,
         "clientPhone": lead.phone,
         "businessUnit": frappe.get_value("Business Unit", lead.business_unit, "business_name"),
-        "agentId": lead.source_agent,
+        "agentId": agent_name if agent_name else lead.source_agent,
         "date": lead.creation
     }
 
@@ -171,7 +183,13 @@ def submit_lead(
         frappe.throw("Business Unit is required")
 
     if not frappe.db.exists("Business Unit", business_unit):
-        frappe.throw("Invalid Business Unit")
+        #business unit might be passed as its category 
+        bu_name = frappe.db.get_value("Business Unit", {"category": business_unit}, "name")
+        if not bu_name:
+            frappe.throw("Invalid Business Unit")
+        else:
+            business_unit = bu_name
+        
 
     # ----------------------------
     # 3. INPUT VALIDATION
@@ -201,6 +219,7 @@ def submit_lead(
     # 5. CREATE LEAD (SERVER AUTHORITY)
     # ----------------------------
     lead = frappe.new_doc("Lead")
+
     lead.business_unit = business_unit
     lead.customer_name = client_name
     #lead.phone should be converted to indian number format
