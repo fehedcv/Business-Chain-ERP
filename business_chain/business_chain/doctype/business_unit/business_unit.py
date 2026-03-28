@@ -1,9 +1,31 @@
 # Copyright (c) 2025, vynx and contributors
 # For license information, please see license.txt
 
-# import frappe
+import frappe
 from frappe.model.document import Document
 
 
 class BusinessUnit(Document):
-	pass
+	#when a new business unit is created, using the email and the name of the manager create a user with the role "Business_manager" with a password of the pattern "BU-{business_unit_name}-manager" and link it to the business unit by creating a new record in the "Business Unit Member" doctype with fields business_unit, user and role
+	def after_insert(self):
+		manager_email = self.email
+		manager_name = self.manager_name
+		business_unit_name = self.business_name
+
+		if manager_email and manager_name:
+			user = frappe.get_doc({
+				"doctype": "User",
+				"email": manager_email,
+				"first_name": manager_name,
+				"enabled": 1,
+				"roles": [{"role": "Business_manager"}],
+				"new_password": f"BU-{business_unit_name}-manager"
+			})
+			user.insert()
+
+			frappe.get_doc({
+				"doctype": "Business Unit Member",
+				"business_unit": self.name,
+				"user": user.name,
+				"role_in_unit": "Manager"
+			}).insert()

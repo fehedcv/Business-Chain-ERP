@@ -15,11 +15,19 @@ def get_business_overview():
     # ---- AUTH GUARD ----
     if "Business_manager" not in roles and "System Manager" not in roles:
         frappe.throw("Not permitted", frappe.PermissionError)
-
-    # ---- FETCH LEADS (already permission-filtered by Frappe) ----
+    
+    #make a variable called business_unit that is queried from the "Business Unit Member" doctype where user is the logged in user and role is "Manager" and get the business unit field from that record, if no record is found return None
+    business_unit = frappe.db.get_value(
+        "Business Unit Member",
+        {"user": user, "role_in_unit": "Manager"},
+        "business_unit"
+    )
+    # ---- FETCH LEADS of the business unit the user is in ----
     leads = frappe.get_all(
         "Lead",
         fields=["name", "status", "creation"],
+        filters={"business_unit": business_unit},
+        order_by="creation desc",
     )
 
     # ---- STATUS COUNTS ----
