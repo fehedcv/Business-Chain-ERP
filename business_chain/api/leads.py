@@ -139,7 +139,7 @@ def get_business_lead_detail(lead_id):
     if lead.business_unit not in owned_units:
         frappe.throw(_("Unauthorized access to this lead"))
     agent_name = frappe.get_value("User", lead.source_agent, "full_name")
-    
+    agent_phone = frappe.get_value("User", lead.source_agent, "phone")
     return {
         "id": lead.name,
         "status": lead.status,
@@ -149,7 +149,9 @@ def get_business_lead_detail(lead_id):
         "clientPhone": lead.phone,
         "businessUnit": frappe.get_value("Business Unit", lead.business_unit, "business_name"),
         "agentId": agent_name if agent_name else lead.source_agent,
-        "date": lead.creation
+        "date": lead.creation,
+        "location": lead.custom_location,
+        "agentPhone": agent_phone if agent_phone else "N/A"
     }
 
 @frappe.whitelist()
@@ -158,7 +160,8 @@ def submit_lead(
     client_name: str,
     client_phone: str,
     service: str,
-    notes: str = None
+    notes: str = None,
+    location: str = None,
 ):
     """
     Agent submits a referral lead.
@@ -226,6 +229,7 @@ def submit_lead(
     lead.phone = f"+91-{client_phone}"  # Ensure phone is a string
     lead.service = service_id     # ✅ LINK FIELD GETS ID
     lead.description = notes
+    lead.custom_location = location
 
     # 🔒 HARD RULES (NON-NEGOTIABLE)
     lead.source_agent = user
