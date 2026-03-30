@@ -2,6 +2,7 @@ import frappe
 import frappe.auth
 from frappe.utils.password import get_decrypted_password, set_encrypted_password
 from frappe.utils import generate_hash
+from frappe.auth import update_password
 
 @frappe.whitelist(allow_guest=True)
 def agent_signup(full_name, email, password, phone):
@@ -62,3 +63,16 @@ def mobile_login(usr, pwd):
         "api_key": api_key,
         "api_secret": api_secret,
     }
+
+#api for password reset - takes email and correct password as input, and new password, and updates the password if the email and current password are correct
+@frappe.whitelist(allow_guest=True)
+def reset_password(email, current_password, new_password):
+    # 1. Authenticate credentials
+    login_manager = frappe.auth.LoginManager()
+    login_manager.authenticate(user=email, pwd=current_password)
+    login_manager.post_login()
+
+    # 2. Update password
+    update_password(email, new_password)
+    frappe.db.commit()
+    return {"status": "ok"}
