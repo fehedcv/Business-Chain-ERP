@@ -67,12 +67,13 @@ def mobile_login(usr, pwd):
 #api for password reset - takes email and correct password as input, and new password, and updates the password if the email and current password are correct
 @frappe.whitelist(allow_guest=True)
 def reset_password(email, current_password, new_password):
-    # 1. Authenticate credentials
+    # 1. Verify current credentials
     login_manager = frappe.auth.LoginManager()
     login_manager.authenticate(user=email, pwd=current_password)
     login_manager.post_login()
 
-    # 2. Update password
-    update_password(email, new_password)
+    # 2. Update to new password
+    update_password(user=email, pwd=new_password)
     frappe.db.commit()
+
     return {"status": "ok"}
