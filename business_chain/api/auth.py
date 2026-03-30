@@ -1,5 +1,7 @@
 import frappe
-from frappe.utils.password import update_password
+import frappe.auth
+from frappe.utils.password import get_decrypted_password, set_encrypted_password
+from frappe.utils import generate_hash
 
 @frappe.whitelist(allow_guest=True)
 def agent_signup(full_name, email, password, phone):
@@ -23,3 +25,40 @@ def agent_signup(full_name, email, password, phone):
     frappe.db.commit()
 
     return {"status": "ok"}
+
+
+@frappe.whitelist(allow_guest=True)
+def mobile_login(usr, pwd):
+    # 1. Authenticate credentials
+    login_manager = frappe.auth.LoginManager()
+    login_manager.authenticate(user=usr, pwd=pwd)
+    login_manager.post_login()
+
+    # 2. Check if keys already exist
+    existing_key = frappe.db.get_value("User", usr, "api_key")
+
+    if existing_key:
+        # Already generated — decrypt and return
+        try:
+            api_secret = get_decrypted_password("User", usr, fieldname="api_secret")
+            return {"api_key": existing_key, "api_secret": api_secret}
+        except Exception:
+            pass  # Secret missing/corrupt — regenerate below
+
+    # 3. Generate new key/secret
+    api_key    = generate_hash(length=15)
+    api_secret = generate_hash(length=15)
+
+    # api_key is a plain Data field
+    frappe.db.set_value("User", usr, "api_key", api_key)
+
+    # api_secret must be stored via set_encrypted_password
+    # so get_decrypted_password can retrieve it correctly
+    set_encrypted_password("User", usr, api_secret, fieldname="api_secret")
+
+    frappe.db.commit()
+
+    return {
+        "api_key": api_key,
+        "api_secret": api_secret,
+    }
