@@ -2,7 +2,7 @@ import frappe
 import frappe.auth
 from frappe.utils.password import get_decrypted_password, set_encrypted_password
 from frappe.utils import generate_hash
-from frappe.auth import update_password
+from frappe.utils.password import update_password
 
 @frappe.whitelist(allow_guest=True)
 def agent_signup(full_name, email, password, phone):
