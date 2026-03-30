@@ -113,11 +113,19 @@ def get_agent_profile():
 def update_agent_profile(full_name, phone, profile_picture):
     agent = frappe.session.user
     agent_doc = frappe.get_doc("User", agent)
+
     agent_doc.full_name = full_name
+    agent_doc.first_name = full_name  # ensure it sticks
     agent_doc.phone = phone
-    agent_doc.user_image = profile_picture
-    agent_doc.save()
+
+    if profile_picture:
+        agent_doc.user_image = profile_picture  # must be a /files/... path
+
+    agent_doc.save(ignore_permissions=True)
+    frappe.db.commit()
+
     return {
         "success": True,
-        "message": "Profile updated successfully"
+        "message": "Profile updated successfully",
+        "log": f"Agent {full_name} ({phone}) updated their profile.",
     }
