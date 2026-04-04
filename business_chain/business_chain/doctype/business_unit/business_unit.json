@@ -11,6 +11,7 @@
   "business_name",
   "category",
   "status",
+  "icon",
   "contact_details_section",
   "manager_name",
   "primary_phone",
@@ -49,10 +50,9 @@
   },
   {
    "fieldname": "category",
-   "fieldtype": "Select",
+   "fieldtype": "Data",
    "in_list_view": 1,
    "label": "Category",
-   "options": "Interior Design\nIT Solutions\nManpower Solutions\nReal Estate\nSecurity Services",
    "reqd": 1
   },
   {
@@ -137,16 +137,21 @@
    "fieldtype": "Table",
    "label": "Gallery",
    "options": "Business Unit Gallery"
+  },
+  {
+   "fieldname": "icon",
+   "fieldtype": "Image",
+   "label": "logo"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-26 23:35:07.056210",
+ "modified": "2026-04-04 23:21:37.896894",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Business Unit",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {

@@ -15,6 +15,7 @@
   "email",
   "description",
   "service",
+  "custom_location",
   "status_and_verification_section",
   "status",
   "verified_by_admin",
@@ -104,16 +105,22 @@
    "fieldtype": "Link",
    "label": "Service",
    "options": "Business Unit Service"
+  },
+  {
+   "fieldname": "custom_location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-12-26 22:13:31.795218",
+ "modified": "2026-04-04 22:42:11.732930",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Lead",
- "naming_rule": "Expression (old style)",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
