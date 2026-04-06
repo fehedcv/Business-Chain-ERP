@@ -19,7 +19,12 @@
   "status_and_verification_section",
   "status",
   "verified_by_admin",
-  "verification_notes"
+  "verification_notes",
+  "payment_section",
+  "total_sale_amount",
+  "approved_credits",
+  "payment_status",
+  "remarks"
  ],
  "fields": [
   {
@@ -111,12 +116,41 @@
    "fieldtype": "Data",
    "label": "Location",
    "reqd": 1
+  },
+  {
+   "fieldname": "payment_section",
+   "fieldtype": "Section Break",
+   "label": "Payment"
+  },
+  {
+   "fieldname": "total_sale_amount",
+   "fieldtype": "Int",
+   "label": "Total sale amount"
+  },
+  {
+   "fieldname": "approved_credits",
+   "fieldtype": "Int",
+   "label": "Approved credits"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "payment_status",
+   "fieldtype": "Select",
+   "label": "Payment Status",
+   "options": "Pending\nSettled",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Data",
+   "label": "Remarks"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-04 22:42:11.732930",
+ "modified": "2026-04-06 13:52:18.632802",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Lead",

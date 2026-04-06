@@ -151,7 +151,10 @@ def get_business_lead_detail(lead_id):
         "agentId": agent_name if agent_name else lead.source_agent,
         "date": lead.creation,
         "location": lead.custom_location,
-        "agentPhone": agent_phone if agent_phone else "N/A"
+        "agentPhone": agent_phone if agent_phone else "N/A",
+        "commission": lead.approved_credits,
+        "totalSaleAmount": lead.total_sale_amount,
+        "paymentStatus": lead.payment_status
     }
 
 @frappe.whitelist()
@@ -246,3 +249,31 @@ def submit_lead(
         "status": lead.status,
         "business_unit": business_unit
     }
+
+
+
+# api to settle agent credit. it will send commision and total sale amount of lead, update it in the doctype fields commision and total_sale_amount and change the status of the ledger entry to "Settled" and also update the remarks with the details of the settlement. only "System Manager" and "Business_manager" can perform this action, and only if the lead is in "Completed" status. it will also check if the ledger entry is in "Pending" status before settling.
+@frappe.whitelist()
+def settle_agent_credit(ledger_id, commission, total_sale_amount):
+    user = frappe.session.user
+    roles = frappe.get_roles(user)
+
+    if "Business_manager" not in roles and "System Manager" not in roles:
+        frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+    lead = frappe.get_doc("Lead", ledger_id)
+
+    if lead.payment_status != "Pending":
+        frappe.throw(_("Only pending credits can be settled"))
+
+
+    if lead.status != "Completed":
+        frappe.throw(_("Can only settle credits for completed leads"))
+
+    lead.approved_credits = commission
+    lead.total_sale_amount = total_sale_amount
+    lead.payment_status = "Settled"
+    lead.remarks = f" | Settled with commission {commission} and total sale amount {total_sale_amount}"
+    lead.save(ignore_permissions=True)
+
+    return {"success": True}

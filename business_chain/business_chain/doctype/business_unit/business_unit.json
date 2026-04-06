@@ -12,11 +12,15 @@
   "category",
   "status",
   "icon",
+  "commision",
   "contact_details_section",
   "manager_name",
   "primary_phone",
   "whatsapp_number",
   "email",
+  "instagram",
+  "facebook",
+  "linkedin",
   "location_and_description_section",
   "website",
   "location",
@@ -142,12 +146,38 @@
    "fieldname": "icon",
    "fieldtype": "Image",
    "label": "logo"
+  },
+  {
+   "fieldname": "instagram",
+   "fieldtype": "Data",
+   "label": "Instagram",
+   "options": "URL"
+  },
+  {
+   "fieldname": "facebook",
+   "fieldtype": "Data",
+   "label": "Facebook",
+   "options": "URL"
+  },
+  {
+   "fieldname": "linkedin",
+   "fieldtype": "Data",
+   "label": "Linkedin",
+   "options": "URL"
+  },
+  {
+   "default": "10",
+   "fieldname": "commision",
+   "fieldtype": "Int",
+   "label": "Commision",
+   "non_negative": 1,
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-04 23:21:37.896894",
+ "modified": "2026-04-06 13:39:59.129666",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Business Unit",
