@@ -187,3 +187,99 @@ def get_team_data():
         "agents": agents,
         "leads": leads
     }
+@frappe.whitelist()
+def get_credit_settlement_data():
+    """
+    Returns all data needed by the CreditSettlement React component in one call:
+    - Leads with payment_status = "Pending", enriched with BU/service display names
+    - All Agent Withdrawal Requests
+    """
+
+    user = frappe.session.user
+    if user != "Administrator":
+        frappe.throw(("You must be logged in to view this data."), frappe.PermissionError)
+
+    # ── 1. Fetch leads with pending payment status ─────────────────────────────
+    leads_raw = frappe.get_all(
+        "Lead",
+        filters={"payment_status": "Pending"},
+        fields=[
+            "name", "customer_name", "phone", "email",
+            "custom_location", "business_unit", "service",
+            "description", "status", "source_agent",
+            "total_sale_amount", "approved_credits",
+            "verified_by_admin", "verification_notes",
+            "payment_status", "remarks", "creation",
+        ],
+        order_by="creation desc",
+    )
+
+    # ── 2. Fetch all Business Units ────────────────────────────────────────────
+    business_units = frappe.get_all(
+        "Business Unit",
+        fields=["name", "business_name", "commision"],
+    )
+
+    bu_map = {bu["name"]: bu for bu in business_units}
+
+    # ── 3. Fetch all service rows ──────────────────────────────────────────────
+    service_rows = frappe.get_all(
+        "Business Unit Service",
+        fields=["name", "service_name", "parent"],
+        order_by="idx asc",
+    )
+
+    service_map = {}
+    for row in service_rows:
+        if row.get("name"):
+            service_map[row["name"]] = row["service_name"]
+        if row.get("service_name"):
+            service_map[row["service_name"]] = row["service_name"]
+
+    # ── 4. Enrich leads with computed financial fields ─────────────────────────
+    leads = []
+    for lead in leads_raw:
+        bu_id = lead.get("business_unit", "")
+        bu_doc = bu_map.get(bu_id, {})
+        commission_pct = bu_doc.get("commision", 10)
+
+        total = lead.get("total_sale_amount") or 0
+        commission_amount = total * (commission_pct / 100)
+        agent_credit = lead.get("approved_credits") or commission_amount
+
+        leads.append({
+            "id":                  lead["name"],
+            "client_name":         lead.get("customer_name", "—"),
+            "client_phone":        lead.get("phone", ""),
+            "client_address":      lead.get("custom_location", ""),
+            "description":         lead.get("description", ""),
+            "lead_status":         lead.get("status", ""),
+            "agent_name":          lead.get("source_agent") or "System",
+            "agent_id":            lead.get("source_agent") or "VYNX-CORE",
+            "date":                lead["creation"].strftime("%Y-%m-%d") if lead.get("creation") else "—",
+            # Resolved display names
+            "business_unit":       bu_doc.get("business_name", bu_id or "—"),
+            "service":             service_map.get(lead.get("service", ""), lead.get("service", "—")),
+            # Financial
+            "total_sale_amount":   total,
+            "commission_pct":      commission_pct,
+            "commission_amount":   commission_amount,
+            "agent_credit":        agent_credit,
+            # Payment
+            "payment_status":      lead.get("payment_status", ""),
+            "remarks":             lead.get("remarks", ""),
+            "verified_by_admin":   lead.get("verified_by_admin", 0),
+            "verification_notes":  lead.get("verification_notes", ""),
+        })
+
+    # ── 5. Fetch withdrawal requests ───────────────────────────────────────────
+    withdrawals = frappe.get_all(
+        "Agent Withdrawal Request",
+        fields=["name", "agent", "requested_credits", "status", "remarks", "requested_on"],
+        order_by="requested_on desc",
+    )
+
+    return {
+        "leads":       leads,
+        "withdrawals": withdrawals,
+    }
