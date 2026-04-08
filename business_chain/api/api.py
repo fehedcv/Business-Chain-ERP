@@ -72,7 +72,11 @@ def get_business_unit(business_unit: str):
         "address": bu.address,
         "description": bu.description,
         "services": services,
-        "gallery": gallery
+        "gallery": gallery,
+        "logo": bu.logo or "",
+        "facebook": bu.facebook,
+        "instagram": bu.instagram,
+        "linkedin": bu.linkedin
     }
 
 

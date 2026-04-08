@@ -110,22 +110,30 @@ def get_agent_profile():
 
 #make an api that allows the agent to update their profile information such as full name, phone number and profile picture
 @frappe.whitelist()
-def update_agent_profile(full_name, phone, profile_picture):
+def update_agent_profile(full_name, phone=None, profile_picture=None):
+    if not full_name:
+        frappe.throw("Full name is required")
+
     agent = frappe.session.user
     agent_doc = frappe.get_doc("User", agent)
 
-    agent_doc.full_name = full_name
-    agent_doc.first_name = full_name  # ensure it sticks
-    agent_doc.phone = phone
+    # Split name properly
+    name_parts = full_name.strip().split()
+    agent_doc.first_name = name_parts[0]
+    agent_doc.last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+
+    # Use correct field
+    if phone:
+        agent_doc.mobile_no = phone
 
     if profile_picture:
-        agent_doc.user_image = profile_picture  # must be a /files/... path
+        if not profile_picture.startswith("/files/"):
+            frappe.throw("Invalid profile picture path")
+        agent_doc.user_image = profile_picture
 
     agent_doc.save(ignore_permissions=True)
-    frappe.db.commit()
 
     return {
         "success": True,
         "message": "Profile updated successfully",
-        "log": f"Agent {full_name} ({phone}) updated their profile.",
     }
