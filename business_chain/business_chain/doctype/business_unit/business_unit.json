@@ -7,11 +7,10 @@
  "engine": "InnoDB",
  "field_order": [
   "basic_unit_section",
-  "naming_series",
   "business_name",
   "category",
   "status",
-  "icon",
+  "logo",
   "commision",
   "contact_details_section",
   "manager_name",
@@ -35,15 +34,6 @@
    "fieldname": "basic_unit_section",
    "fieldtype": "Section Break",
    "label": "Basic Unit"
-  },
-  {
-   "fieldname": "naming_series",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Naming Series",
-   "options": "BU-.####",
-   "read_only": 1,
-   "reqd": 1
   },
   {
    "fieldname": "business_name",
@@ -143,11 +133,6 @@
    "options": "Business Unit Gallery"
   },
   {
-   "fieldname": "icon",
-   "fieldtype": "Image",
-   "label": "logo"
-  },
-  {
    "fieldname": "instagram",
    "fieldtype": "Data",
    "label": "Instagram",
@@ -172,12 +157,17 @@
    "label": "Commision",
    "non_negative": 1,
    "reqd": 1
+  },
+  {
+   "fieldname": "logo",
+   "fieldtype": "Attach Image",
+   "label": "Logo"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-06 13:39:59.129666",
+ "modified": "2026-04-08 07:37:20.787445",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Business Unit",

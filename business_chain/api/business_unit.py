@@ -26,7 +26,9 @@ def get_my_business_unit():
             {"name": s.service_name, "description": s.description}
             for s in unit.services
         ],
-        "gallery": [g.image for g in unit.gallery]
+        "gallery": [g.image for g in unit.gallery],
+        "logo": unit.logo or "",
+        "commision": unit.commision
     }
 
 
@@ -72,3 +74,24 @@ def update_my_business_unit(data):
 
     return {"ok": True}
 
+
+@frappe.whitelist()
+def upload_business_unit_logo():
+    user = frappe.session.user
+    owned_units = get_owned_business_units(user)
+    if not owned_units:
+        frappe.throw(_("No business unit access"))
+    
+    unit_name = owned_units[0]
+    
+    # Upload the file using Frappe's handler
+    from frappe.handler import upload_file
+    file_doc = upload_file()
+    
+    # Now explicitly set it on the document
+    doc = frappe.get_doc("Business Unit", unit_name)
+    doc.logo = file_doc.file_url
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()
+    
+    return {"file_url": file_doc.file_url}

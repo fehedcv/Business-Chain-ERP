@@ -148,18 +148,18 @@
    "label": "Remarks"
   },
   {
-   "default": "Pending",
+   "default": "Waiting",
    "fieldname": "credit_status",
    "fieldtype": "Select",
    "label": "Credit status",
-   "options": "Pending\nCredited",
+   "options": "Waiting\nPending\nCredited",
    "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-07 22:40:38.191792",
+ "modified": "2026-04-08 06:59:58.125370",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Lead",

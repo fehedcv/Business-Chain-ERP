@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 
 @frappe.whitelist()
 def get_admin_dashboard_data():
@@ -291,3 +292,219 @@ def get_credit_settlement_data():
         "leads":       leads,
         "withdrawals": withdrawals,
     }
+
+
+@frappe.whitelist()
+def get_leads_business_units_services():
+    if frappe.session.user == "Guest":
+        frappe.throw(_("You must be logged in to access this data."), frappe.PermissionError)
+
+    leads_raw = frappe.get_all(
+        "Lead",
+        fields=[
+            "name",
+            "naming_series",
+            "business_unit",
+            "service",
+            "source_agent",
+            "customer_name",
+            "phone",
+            "email",
+            "custom_location",
+            "description",
+            "status",
+            "verified_by_admin",
+            "verification_notes",
+            "creation",
+        ],
+        order_by="creation desc",
+    )
+
+    business_units = frappe.get_all(
+        "Business Unit",
+        fields=["name", "business_name"],
+        order_by="name asc",
+    )
+
+    business_unit_map = {
+        bu["name"]: bu["business_name"] for bu in business_units
+    }
+
+    service_rows = frappe.db.sql(
+        """
+        SELECT `name`, `parent`, `service_name`
+        FROM `tabBusiness Unit Service`
+        ORDER BY `parent`, `idx` ASC
+        """,
+        as_dict=True,
+    )
+
+    service_map = {
+        row["name"]: {
+            "service_name": row["service_name"],
+            "business_unit_id": row["parent"],
+        }
+        for row in service_rows
+    }
+
+    agent_ids = [lead.get("source_agent") for lead in leads_raw if lead.get("source_agent")]
+    user_rows = []
+    if agent_ids:
+        user_rows = frappe.get_all(
+            "User",
+            filters={"name": ["in", list(set(agent_ids))]},
+            fields=["name", "full_name"],
+        )
+
+    user_map = {user["name"]: user["full_name"] for user in user_rows}
+
+    leads = []
+    for lead in leads_raw:
+        agent_id = lead.get("source_agent") or ""
+        leads.append({
+            "id": lead["name"],
+            "naming_series": lead.get("naming_series", ""),
+            "business_unit_id": lead.get("business_unit", ""),
+            "business_unit_name": business_unit_map.get(lead.get("business_unit", ""), ""),
+            "service_id": lead.get("service", ""),
+            "service_name": service_map.get(lead.get("service", ""), {}).get("service_name", ""),
+            "source_agent": user_map.get(agent_id, agent_id),
+            "agent_id": agent_id,
+            "customer_name": lead.get("customer_name", ""),
+            "phone": lead.get("phone", ""),
+            "email": lead.get("email", ""),
+            "client_address": lead.get("custom_location", ""),
+            "description": lead.get("description", ""),
+            "status": lead.get("status", ""),
+            "verified_by_admin": bool(lead.get("verified_by_admin")),
+            "verification_notes": lead.get("verification_notes", ""),
+            "creation": lead.get("creation"),
+        })
+
+    return {
+        "success": True,
+        "data": {
+            "leads": leads,
+            "business_units": [
+                {"id": bu["name"], "name": bu["business_name"]}
+                for bu in business_units
+            ],
+            "services": [
+                {
+                    "id": row["name"],
+                    "name": row["service_name"],
+                    "business_unit_id": row["parent"],
+                }
+                for row in service_rows
+            ],
+        },
+    }
+
+
+@frappe.whitelist()
+def delete_business_unit(business_unit_id: str):
+    # 🔒 Permission check
+    if frappe.session.user != "Administrator":
+        frappe.throw(_("Only Administrator can perform this action."), frappe.PermissionError)
+
+    # 🔍 Validate existence
+    if not frappe.db.exists("Business Unit", business_unit_id):
+        frappe.throw(_("Business Unit not found."), frappe.DoesNotExistError)
+
+    try:
+        # 🧹 STEP 1 — Delete Business Unit Members
+        frappe.db.delete("Business Unit Member", {
+            "business_unit": business_unit_id
+        })
+
+        # 🔍 STEP 2 — Check if Leads exist
+        has_leads = frappe.db.exists("Lead", {
+            "business_unit": business_unit_id
+        })
+
+        if has_leads:
+            # 🔧 STEP 3 — Get or create "Deleted" BU (guaranteed non-null)
+            deleted_bu = get_or_create_deleted_business_unit()
+
+            # 🔴 Safety check (never allow NULL)
+            if not deleted_bu:
+                frappe.throw("Critical error: 'Deleted' Business Unit missing")
+
+            # 🔁 STEP 4 — Reassign Leads (atomic update)
+            frappe.db.sql("""
+                UPDATE `tabLead`
+                SET business_unit = %s
+                WHERE business_unit = %s
+            """, (deleted_bu, business_unit_id))
+
+        # ❌ STEP 5 — Delete original Business Unit
+        frappe.db.delete("Business Unit", {
+            "name": business_unit_id
+        })
+
+        # 💾 Commit everything
+        frappe.db.commit()
+
+    except Exception:
+        frappe.db.rollback()
+        frappe.log_error(frappe.get_traceback(), "Delete Business Unit Failed")
+        frappe.throw(_("Failed to delete Business Unit."))
+
+    return {
+        "success": True,
+        "message": f"Business Unit '{business_unit_id}' deleted successfully."
+    }
+
+
+def get_or_create_deleted_business_unit() -> str:
+    """
+    Guarantees a valid 'Deleted' Business Unit exists.
+    NEVER returns None.
+    """
+
+    # 🔍 Try fetch first
+    deleted_bu = frappe.db.get_value(
+        "Business Unit",
+        {"business_name": "Deleted"},
+        "name"
+    )
+
+    if deleted_bu:
+        return deleted_bu
+
+    # 🔧 Create it
+    try:
+        doc = frappe.get_doc({
+            "doctype": "Business Unit",
+            "business_name": "Deleted",
+            "category": "Uncategorized",
+            "email": "nothing@radix.com",
+            "primary_phone": "+91 9328475629",
+            "whatsapp_number": "+91 9328475629",
+            "address": "null",
+            "description": "null",
+            "commision": 0,
+            "manager_name": "System"
+        })
+
+        doc.insert(ignore_permissions=True)
+
+        # Force DB visibility
+        frappe.db.commit()
+
+    except Exception:
+        # 🔁 Handle race condition (another request created it)
+        frappe.db.rollback()
+
+    # 🔁 ALWAYS re-fetch (source of truth)
+    deleted_bu = frappe.db.get_value(
+        "Business Unit",
+        {"business_name": "Deleted"},
+        "name"
+    )
+
+    if not deleted_bu:
+        frappe.throw("Failed to create or retrieve 'Deleted' Business Unit")
+
+    return deleted_bu
+

@@ -101,7 +101,9 @@ def get_my_lead_history():
             "customer_name",
             "business_unit",
             "status",
-            "creation"
+            "creation",
+            "payment_status",
+            "credit_status"
         ],
         order_by="creation desc"
     )
@@ -114,7 +116,9 @@ def get_my_lead_history():
             "clientName": l.customer_name,
             "businessUnit": frappe.get_value("Business Unit", l.business_unit, "business_name"),
             "status": normalize_status(l.status),
-            "date": formatdate(l.creation)
+            "date": formatdate(l.creation),
+            "paymentStatus": l.payment_status if l.payment_status else "N/A",
+            "creditStatus": l.credit_status if l.credit_status else "N/A"
         })
         i+=1
 

@@ -44,7 +44,9 @@ def get_business_leads(status="All", search=None):
             "status",
             "business_unit",
             "creation as date",
-            "source_agent"
+            "source_agent",
+            "payment_status",
+            "credit_status"
         ],
         order_by="creation desc"
     )
@@ -55,6 +57,11 @@ def get_business_leads(status="All", search=None):
         lead["business_unit"] = business_name if business_name else lead.business_unit
         agent_name = frappe.get_value("User", lead.source_agent, "full_name")
         lead["agentId"] = agent_name if agent_name else lead.source_agent
+        payment_status = lead.get("payment_status", "Pending")
+        lead["paymentStatus"] = payment_status
+        credit_status = lead.get("credit_status", "Pending")
+        lead["creditStatus"] = credit_status
+
 
 
     # ---- SUMMARY COUNTS ----
@@ -279,6 +286,7 @@ def settle_agent_credit(ledger_id, commission, total_sale_amount):
     lead.total_sale_amount = total_sale_amount
     lead.payment_status = "Settled"
     lead.remarks = f" | Settled with commission {commission} and total sale amount {total_sale_amount}"
+    lead.credit_status = "Pending"
     lead.save(ignore_permissions=True)
 
     return {"success": True}
