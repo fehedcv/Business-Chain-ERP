@@ -34,7 +34,6 @@ def get_business_leads(status="All", search=None):
 
     if search:
         filters["client_name"] = ["like", f"%{search}%"]
-
     leads = frappe.get_all(
         "Lead",
         filters=filters,
@@ -44,7 +43,8 @@ def get_business_leads(status="All", search=None):
             "service",
             "status",
             "business_unit",
-            "creation as date"
+            "creation as date",
+            "source_agent"
         ],
         order_by="creation desc"
     )
@@ -53,6 +53,8 @@ def get_business_leads(status="All", search=None):
         lead["service"] = service_name if service_name else lead.service
         business_name = frappe.get_value("Business Unit", lead.business_unit, "business_name")
         lead["business_unit"] = business_name if business_name else lead.business_unit
+        agent_name = frappe.get_value("User", lead.source_agent, "full_name")
+        lead["agentId"] = agent_name if agent_name else lead.source_agent
 
 
     # ---- SUMMARY COUNTS ----
@@ -140,6 +142,8 @@ def get_business_lead_detail(lead_id):
         frappe.throw(_("Unauthorized access to this lead"))
     agent_name = frappe.get_value("User", lead.source_agent, "full_name")
     agent_phone = frappe.get_value("User", lead.source_agent, "phone")
+    #return commission percentage from the business unit doctype based on the business unit of the lead
+    commission_pct = frappe.get_value("Business Unit", lead.business_unit, "commision")
     return {
         "id": lead.name,
         "status": lead.status,
@@ -154,7 +158,8 @@ def get_business_lead_detail(lead_id):
         "agentPhone": agent_phone if agent_phone else "N/A",
         "commission": lead.approved_credits,
         "totalSaleAmount": lead.total_sale_amount,
-        "paymentStatus": lead.payment_status
+        "paymentStatus": lead.payment_status,
+        "commision": commission_pct
     }
 
 @frappe.whitelist()

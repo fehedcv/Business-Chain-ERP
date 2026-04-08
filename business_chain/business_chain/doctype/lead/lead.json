@@ -24,6 +24,7 @@
   "total_sale_amount",
   "approved_credits",
   "payment_status",
+  "credit_status",
   "remarks"
  ],
  "fields": [
@@ -145,12 +146,20 @@
    "fieldname": "remarks",
    "fieldtype": "Data",
    "label": "Remarks"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "credit_status",
+   "fieldtype": "Select",
+   "label": "Credit status",
+   "options": "Pending\nCredited",
+   "reqd": 1
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-04-06 13:52:18.632802",
+ "modified": "2026-04-07 22:40:38.191792",
  "modified_by": "Administrator",
  "module": "Business Chain",
  "name": "Lead",

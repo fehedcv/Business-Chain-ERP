@@ -202,7 +202,7 @@ def get_credit_settlement_data():
     # ── 1. Fetch leads with pending payment status ─────────────────────────────
     leads_raw = frappe.get_all(
         "Lead",
-        filters={"payment_status": "Pending"},
+        filters={"credit_status": "Pending"},
         fields=[
             "name", "customer_name", "phone", "email",
             "custom_location", "business_unit", "service",
@@ -246,6 +246,13 @@ def get_credit_settlement_data():
         total = lead.get("total_sale_amount") or 0
         commission_amount = total * (commission_pct / 100)
         agent_credit = lead.get("approved_credits") or commission_amount
+    #add ledgerId to the lead dictionary with the value of the name field of the Agent Credit Ledger entry linked to the lead, if exists, else set it to None. you can find the linked Agent Credit Ledger entry by filtering on the Lead field in the Agent Credit Ledger doctype with the name of the lead
+        ledger_entry = frappe.db.get_value(
+            "Agent Credit Ledger",
+            filters={"lead": lead["name"]},
+            fieldname="name"
+        )
+        lead["ledgerId"] = ledger_entry if ledger_entry else None
 
         leads.append({
             "id":                  lead["name"],
@@ -270,6 +277,7 @@ def get_credit_settlement_data():
             "remarks":             lead.get("remarks", ""),
             "verified_by_admin":   lead.get("verified_by_admin", 0),
             "verification_notes":  lead.get("verification_notes", ""),
+            "ledger_id":           lead.get("ledgerId", None)
         })
 
     # ── 5. Fetch withdrawal requests ───────────────────────────────────────────

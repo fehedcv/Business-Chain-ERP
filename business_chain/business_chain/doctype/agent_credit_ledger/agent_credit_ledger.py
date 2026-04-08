@@ -21,6 +21,17 @@ class AgentCreditLedger(Document):
         # ❌ Block everything else
         frappe.throw("Only admin or system actions can create credit ledger entries")
 
+    def on_update(self):
+        if self.status == "Approved" and self.lead:
+            frappe.db.set_value(
+                "Lead",
+                self.lead,
+                {
+                    "credit_status": "Credited",
+                    "approved_credits": self.credits or 0,
+                },
+                update_modified=False,
+            )
 
 
 def get_permission_query_conditions(user):
