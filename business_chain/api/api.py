@@ -115,7 +115,7 @@ def get_my_lead_history():
             "id": i,
             "clientName": l.customer_name,
             "businessUnit": frappe.get_value("Business Unit", l.business_unit, "business_name"),
-            "status": normalize_status(l.status),
+            "status" : l.status,
             "date": formatdate(l.creation),
             "paymentStatus": l.payment_status if l.payment_status else "N/A",
             "creditStatus": l.credit_status if l.credit_status else "N/A"
@@ -124,13 +124,3 @@ def get_my_lead_history():
 
     return result
 
-
-def normalize_status(status):
-    """
-    UI-level normalization
-    """
-    if status in ("Verified", "Completed"):
-        return "Successful"
-    if status == "Rejected":
-        return "Rejected"
-    return "Pending"
