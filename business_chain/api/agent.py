@@ -1,4 +1,5 @@
 import frappe
+from frappe.utils.file_manager import save_file
 
 
 @frappe.whitelist()
@@ -97,43 +98,101 @@ def get_agent_dashboard_data():
 
 
 #make an api that returns the full name, phone number, email and profile picture of the agent based on the current logged in user
+
+import frappe
+
 @frappe.whitelist()
 def get_agent_profile():
-    agent = frappe.session.user
-    agent_doc = frappe.get_doc("User", agent)
+    user = frappe.session.user
+
+    data = frappe.db.get_value(
+        "Agent Profile",
+        {"user": user},
+        ["full_name", "phone", "pfp"],
+        as_dict=True
+    )
+
+    if not data:
+        frappe.throw("Agent profile not found")
+
+    email = frappe.db.get_value("User", user, "email")
+
     return {
-        "fullName": agent_doc.full_name,
-        "phone": agent_doc.phone,
-        "email": agent_doc.email,
-        "profilePicture": agent_doc.user_image
-    }   
+        "fullName": data.full_name,
+        "phone": data.phone,
+        "email": email,
+        "profilePicture": data.pfp
+    }
 
 #make an api that allows the agent to update their profile information such as full name, phone number and profile picture
+import frappe
+
 @frappe.whitelist()
-def update_agent_profile(full_name, phone=None, profile_picture=None):
+def update_agent_profile():
+    data = frappe.form_dict
+
+    full_name = data.get("full_name")
+    phone = data.get("phone")
+    profile_picture = data.get("profile_picture")
+
     if not full_name:
         frappe.throw("Full name is required")
 
-    agent = frappe.session.user
-    agent_doc = frappe.get_doc("User", agent)
+    user = frappe.session.user
 
-    # Split name properly
-    name_parts = full_name.strip().split()
-    agent_doc.first_name = name_parts[0]
-    agent_doc.last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+    # 1. Get Agent Profile
+    profile_name = frappe.db.get_value("Agent Profile", {"user": user})
 
-    # Use correct field
+    if not profile_name:
+        frappe.throw("Agent profile not found")
+
+    profile = frappe.get_doc("Agent Profile", profile_name)
+
+    # 2. Update profile fields ONLY
+    profile.full_name = full_name.strip()
+
     if phone:
-        agent_doc.mobile_no = phone
+        profile.phone = phone
 
     if profile_picture:
         if not profile_picture.startswith("/files/"):
             frappe.throw("Invalid profile picture path")
-        agent_doc.user_image = profile_picture
+        profile.pfp = profile_picture
 
-    agent_doc.save(ignore_permissions=True)
+    profile.save(ignore_permissions=True)
 
     return {
         "success": True,
-        "message": "Profile updated successfully",
+        "message": "Profile updated successfully"
+    }
+
+@frappe.whitelist()
+def upload_profile_picture():
+    if 'file' not in frappe.request.files:
+        frappe.throw("No file uploaded")
+
+    uploaded_file = frappe.request.files['file']
+
+    file_doc = save_file(
+        fname=uploaded_file.filename,
+        content=uploaded_file.read(),
+        dt="Agent Profile",   # optional link
+        dn=frappe.session.user,
+        is_private=0
+    )
+
+    agent = frappe.session.user
+    profile_name = frappe.db.get_value("Agent Profile", {"user": agent})
+
+    if not profile_name:
+        frappe.throw("Agent profile not found")
+
+    profile = frappe.get_doc("Agent Profile", profile_name)
+    profile.pfp = file_doc.file_url
+    profile.save(ignore_permissions=True)
+
+
+    return {
+        "success": True,
+        "fileUrl": file_doc.file_url
     }

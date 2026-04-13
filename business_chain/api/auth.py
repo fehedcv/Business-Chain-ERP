@@ -5,28 +5,54 @@ from frappe.utils import generate_hash
 from frappe.utils.password import update_password
 
 @frappe.whitelist(allow_guest=True)
-def agent_signup(full_name, email, password, phone):
+def agent_signup():
+    data = frappe.form_dict
+
+    full_name = data.get("full_name")
+    email = data.get("email")
+    password = data.get("password")
+    phone = data.get("phone")
+    if phone and not phone.startswith("+91"):
+        phone = "+91" + phone
+
+    if not full_name:
+        frappe.throw("Full name is required")
+
     if frappe.db.exists("User", email):
-        frappe.throw("An account with this email already exists.")
+        frappe.throw("User already exists")
 
     parts = full_name.strip().split(" ", 1)
-    user = frappe.get_doc({
-        "doctype":           "User",
-        "email":             email,
-        "first_name":        parts[0],
-        "last_name":         parts[1] if len(parts) > 1 else "",
-        "full_name":         full_name,
-        "phone":         phone,
-        "send_welcome_email": 0,
-        "enabled":           1,
-    })
-    user.append("roles", {"role": "Agent"})
-    user.insert(ignore_permissions=True)
-    update_password(email, password)
-    frappe.db.commit()
 
-    return {"status": "ok"}
+    try:
+        user = frappe.get_doc({
+            "doctype": "User",
+            "email": email,
+            "first_name": parts[0],
+            "last_name": parts[1] if len(parts) > 1 else "",
+            "enabled": 1,
+            "send_welcome_email": 0,
+        })
 
+        user.append("roles", {"role": "Agent"})
+        user.insert(ignore_permissions=True)
+
+        update_password(email, password)
+
+        profile = frappe.get_doc({
+            "doctype": "Agent Profile",
+            "user": user.name,
+            "full_name": full_name,
+            "phone": phone,
+        })
+
+        profile.insert(ignore_permissions=True)
+
+        return {"status": "ok"}
+
+    except Exception as e:
+        frappe.db.rollback()
+        frappe.log_error(frappe.get_traceback(), "Signup Error")
+        raise e
 
 @frappe.whitelist(allow_guest=True)
 def mobile_login(usr, pwd):
